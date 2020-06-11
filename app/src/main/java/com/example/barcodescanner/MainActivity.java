@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -12,6 +15,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -61,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        copyFn();
 
     }
 
@@ -82,11 +87,26 @@ public class MainActivity extends AppCompatActivity {
                 scanBtn.setEnabled(false);
                 copyBtn.setVisibility(View.VISIBLE);
                 scanAgainBtn.setVisibility(View.VISIBLE);
+                copyBtn.setEnabled(true);
             }
 
 
 
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void copyFn(){
+        copyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip= ClipData.newPlainText("TextView", scannedText.getText().toString());
+                assert clipboard != null;
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(MainActivity.this, "Copied", Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 }
