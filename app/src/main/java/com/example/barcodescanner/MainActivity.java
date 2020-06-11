@@ -1,5 +1,6 @@
 package com.example.barcodescanner;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -20,9 +21,47 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity {
     private TextView scannedText;
     private Button copyBtn, scanBtn, scanAgainBtn;
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        int[] status = new int[] {scannedText.getVisibility(), scanBtn.getVisibility(), scanAgainBtn.getVisibility(), copyBtn.getVisibility()};
+        boolean[] enablingStatus= new boolean[]{scanBtn.isEnabled(), scanAgainBtn.isEnabled(), copyBtn.isEnabled()};
+
+
+        outState.putString("scannedText", scannedText.getText().toString());
+//        outState.putInt("scannedTextStatus", scannedText.getVisibility());
+        outState.putIntArray("status", status);
+        outState.putBooleanArray("enablingStatus", enablingStatus);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        scannedText.setText(savedInstanceState.getString("scannedText"));
+//        scannedText.setVisibility(savedInstanceState.getInt("scannedTextStatus"));
+        int[] status= Objects.requireNonNull(savedInstanceState.getIntArray("status")).clone();
+        boolean[] enablingStatus= Objects.requireNonNull(savedInstanceState.getBooleanArray("enablingStatus")).clone();
+
+        scannedText.setVisibility(status[0]);
+        scanBtn.setVisibility(status[1]);
+        scanAgainBtn.setVisibility(status[2]);
+        copyBtn.setVisibility(status[3]);
+
+        scanBtn.setEnabled(enablingStatus[0]);
+        scanAgainBtn.setEnabled(enablingStatus[1]);
+        copyBtn.setEnabled(enablingStatus[2]);
+
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,20 +114,26 @@ public class MainActivity extends AppCompatActivity {
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
 
         if (intentResult!=null){
-            if (intentResult.getContents()==null)
+            if (intentResult.getContents()==null) {
                 scannedText.setText("Error : Scanning Failed");
+                copyBtn.setEnabled(false);
+                scanBtn.setText("Scan Again");
+                scannedText.setVisibility(View.VISIBLE);
+
+            }
+
 
             else {
                 scannedText.setText(intentResult.getContents());
-            }
-            if (scanBtn.isEnabled()){
+                copyBtn.setEnabled(true);
                 scannedText.setVisibility(View.VISIBLE);
                 scanBtn.setVisibility(View.GONE);
                 scanBtn.setEnabled(false);
                 copyBtn.setVisibility(View.VISIBLE);
                 scanAgainBtn.setVisibility(View.VISIBLE);
-                copyBtn.setEnabled(true);
+
             }
+
 
 
 
